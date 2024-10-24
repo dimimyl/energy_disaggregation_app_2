@@ -1,0 +1,99 @@
+# /main.py
+from data.data_loader import DataLoader
+from data.preprocessor import Preprocessor
+from data.dataset_splitter import DatasetSplitter
+from utils.plot_util import plot_devices, plot_predictions
+from models.rnn_model import RNNModel
+from models.lstm_model import LSTMModel
+from models.knn_model import KNNModel
+from models.random_forest_model import RandomForestModel
+from sklearn.metrics import r2_score
+import pandas as pd
+import numpy as np
+
+# Database configuration
+db_config = {
+    'dbname': 'smartmeterlogs',
+    'user': 'readsmartmetermech',
+    'password': 'zocsyx-qogcEf-saxbe8',
+    'host': 'smartmetermech.chu4s6qua02r.eu-central-1.rds.amazonaws.com',
+    'port': '9001'
+}
+
+houses_config = [
+    {'clientid': 'house12', 'deviceid': 'st_wh_wm', 'plugid1': 'ac', 'plugid2': 'fridge'},
+    {'clientid': 'house14', 'deviceid': 'st_wh_wm', 'plugid1': 'ac', 'plugid2': 'fridge'},
+    {'clientid': 'house15', 'deviceid': 'st_wh_wm', 'plugid1': 'ac', 'plugid2': 'fridge'},
+    {'clientid': 'house16', 'deviceid': 'st_wh_wm', 'plugid1': 'ac1', 'plugid2': 'fridge'},
+]
+
+# Load the data
+loader = DataLoader(db_config)
+
+# Function to load data from CSV
+def load_data_from_csv(file_path):
+    # Load the CSV file into a pandas DataFrame
+    df = pd.read_csv(file_path)
+    return df
+
+# Function to fetch data using DataLoader
+def load_data_from_dataloader():
+    loader = DataLoader(db_config)
+    merged_df = loader.fetch_data(houses_config)
+    return merged_df
+
+# Choose data loading method
+use_csv = input("Do you want to use an existing CSV file for the dataset? (yes/no): ").strip().lower()
+
+if use_csv == 'yes':
+    merged_df = load_data_from_csv('combined_dataset.csv')
+else:
+    # Fetch data from DataLoader
+    merged_df = load_data_from_dataloader()
+
+plot_devices(merged_df)
+
+preprocessor = Preprocessor(merged_df)
+preprocessor.forward_fill()
+preprocessor.modify_clientid()
+preprocessor.modify_timestamps()
+preprocessor.one_hot_encode_clients()
+#preprocessor.normalize_data()
+
+# Get the preprocessed dataframe
+preprocessed_df = preprocessor.get_dataframe()
+
+# Save preprocessed dataframe to csv
+#preprocessed_df.to_csv('preprocessed_dataset.csv', index=False)
+
+# Split dataset into train evaluation and test part
+target_columns = ['st', 'wh','wm', 'ac_power', 'fridge_power']
+client_columns = [col for col in preprocessed_df.columns if col.startswith('client_')]
+splitter = DatasetSplitter(preprocessed_df, target_columns=target_columns, client_columns=client_columns)
+X_train, y_train, X_eval, y_eval, X_test, y_test = splitter.split()
+splitter.save_splits_to_csv(output_dir='output')
+
+# Choose model type
+# Uncomment one of the models you want to use:
+
+#model = RNNModel(input_shape=(X_train.shape[1], 1), output_units=y_train.shape[1])
+#model = LSTMModel(input_shape=(X_train.shape[1], 1), output_units=y_train.shape[1])
+model = KNNModel(n_neighbors=100)  # Default to KNN
+#model = RandomForestModel(n_estimators=200, max_depth=10, random_state=42)
+
+# Train and evaluate model
+model.train(X_train, y_train)
+loss = model.evaluate(X_eval, y_eval)
+predictions = model.predict(X_test)
+plot_predictions(predictions)
+
+print('Model accuracy is:',r2_score(y_test,predictions))
+# Save predictions to CSV
+np.savetxt('predictions.csv', predictions, delimiter=',')
+print("Predictions saved to 'predictions.csv'")
+
+
+
+
+
+
