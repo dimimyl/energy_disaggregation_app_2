@@ -98,7 +98,7 @@ class Preprocessor:
 
     def normalize_with_mean_power(self, power_column='agg'):
         """
-        Normalizes the specified columns based on the mean of the aggregated power.
+        Normalizes the specified columns based on the mean of the aggregated power for each client.
 
         Parameters:
         power_column (str): The column used for normalization. Default is 'agg'.
@@ -107,15 +107,19 @@ class Preprocessor:
         if power_column not in self.dataframe.columns:
             raise ValueError(f"The dataframe does not contain a '{power_column}' column.")
 
-        # Calculate the mean of the specified power column
-        mean_power = self.dataframe[power_column].mean()
+        # Group by 'clientid' and calculate mean of the specified power column
+        mean_power_by_client = self.dataframe.groupby('clientid')[power_column].mean()
 
-        # Normalize all columns except the power column itself
+        # Normalize the specified columns based on client mean power
         columns_to_normalize = self.dataframe.select_dtypes(include=['float64', 'int']).columns.tolist()
-        columns_to_normalize.remove('time')  # Exclude the power column from normalization
+        columns_to_normalize.remove('time')  # Exclude the time column from normalization
+        columns_to_normalize.remove('clientid')  # Exclude the clientid column from normalization
 
-        # Normalize the columns
-        self.dataframe[columns_to_normalize] = self.dataframe[columns_to_normalize] / mean_power
+        # Normalize the columns for each client
+        for client_id, client_data in self.dataframe.groupby('clientid'):
+            client_mean_power = mean_power_by_client[client_id]
+            # Normalize using the client's mean power
+            self.dataframe.loc[self.dataframe['clientid'] == client_id, columns_to_normalize] /= client_mean_power
 
     def get_dataframe(self):
         """

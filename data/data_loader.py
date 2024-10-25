@@ -105,7 +105,7 @@ class DataLoader:
 
             # Concatenate all DataFrames from different houses into one
             final_merged_df = pd.concat(merged_dfs, ignore_index=True)
-            final_merged_df.to_csv('combined_dataset.csv', index=False)
+            final_merged_df.to_csv('output/combined_dataset.csv', index=False)
 
             return final_merged_df
 

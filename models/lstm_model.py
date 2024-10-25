@@ -11,17 +11,11 @@ class LSTMModel(BaseModel):
 
     def build_model(self):
         self.model = tf.keras.models.Sequential([
-            # First LSTM layer
-            tf.keras.layers.LSTM(128, activation='tanh', return_sequences=True, input_shape=self.input_shape),
-
-            # Optional: Second LSTM layer to capture deeper temporal dependencies
-            tf.keras.layers.LSTM(64, activation='tanh'),
-
-            # Dropout layer for regularization
+            tf.keras.layers.LSTM(200, activation='tanh', input_shape=self.input_shape, return_sequences=True),
             tf.keras.layers.Dropout(0.2),
-
-            # Fully connected output layer
-            tf.keras.layers.Dense(self.output_units)
+            tf.keras.layers.LSTM(100, activation='relu', return_sequences=False),
+            tf.keras.layers.Dropout(0.2),
+            tf.keras.layers.Dense(self.output_units, activation='linear')
         ])
 
         # Compile the model

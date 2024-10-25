@@ -1,7 +1,5 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib as mpl
-
 
 def plot_devices(dataframe):
     """
@@ -31,14 +29,54 @@ def plot_devices(dataframe):
 
         # Set plot details
         plt.title(f"Signals Over Time for Client: {clientid}")
-        plt.xlabel('Time')
-        plt.ylabel('Signal Value')
+        plt.xlabel('Time (s)')
+        plt.ylabel('Apparent Power (VA)')
         plt.grid(True)
         plt.legend()
         plt.show()
 
 
-def plot_predictions (predictions):
-    plt.plot(predictions[:,4])
-    plt.show()
+def plot_preprocessed_dataset(file_path):
+
+    """
+    This function plots the signals for each house after preprocessing
+
+    Parameters:
+    filepath: The path of the csv file containing preprocessed dataset
+
+    """
+    # Load the CSV file into a pandas DataFrame
+    df = pd.read_csv(file_path, delimiter=',', skipinitialspace=True)
+
+    # Get unique client IDs
+    client_ids = df['clientid'].unique()
+
+    # Create a separate plot for each client ID
+    for client_id in client_ids:
+        # Filter the data for the current client
+        client_data = df[df['clientid'] == client_id]
+
+        # Set the figure size
+        plt.figure(figsize=(12, 6))
+
+        # Plotting each variable
+        plt.plot(client_data['time'], client_data['agg'], label='Aggregate', alpha=0.7)
+        plt.plot(client_data['time'], client_data['wm'], label='Washing Machine', alpha=0.7)
+        plt.plot(client_data['time'], client_data['st'], label='Standby', alpha=0.7)
+        plt.plot(client_data['time'], client_data['wh'], label='Water Heater', alpha=0.7)
+        plt.plot(client_data['time'], client_data['ac_power'], label='AC Power', alpha=0.7)
+        plt.plot(client_data['time'], client_data['fridge_power'], label='Fridge Power', alpha=0.7)
+
+        # Adding labels and title
+        plt.xlabel('Time')
+        plt.ylabel('Power (W)')
+        plt.title(f'Energy Consumption for Client ID {client_id}')
+        plt.legend()
+        plt.grid()
+
+        # Show the plot
+        plt.tight_layout()
+        plt.show()
+
+
 
