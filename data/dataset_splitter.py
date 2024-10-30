@@ -44,7 +44,7 @@ class DatasetSplitter:
         test_data = self.dataframe[self.dataframe['clientid'] == test_client]
 
         # Feature columns: time, agg, and other device power columns
-        feature_columns = [self.timestamp_column, self.agg_column] + [col for col in self.target_columns if col != self.agg_column]
+        feature_columns = [self.timestamp_column, self.agg_column]
 
         # Prepare the features (X) and targets (y) for each set
         X_train = train_data[feature_columns]
@@ -155,27 +155,6 @@ class DatasetSplitterHotEncoding:
         self.X_test, self.y_test = X_test, y_test
 
         return X_train, y_train, X_eval, y_eval, X_test, y_test
-
-    def save_splits_to_csv(self, output_dir='output'):
-        """
-        Saves the split datasets (X_train, y_train, X_eval, y_eval, X_test, y_test) as CSV files.
-
-        Parameters:
-        output_dir (str): The directory where the CSV files will be saved. Default is 'output'.
-        """
-        # Save X_train and y_train
-        self.X_train.to_csv(f'{output_dir}/X_train.csv', index=False)
-        self.y_train.to_csv(f'{output_dir}/y_train.csv', index=False)
-
-        # Save X_eval and y_eval
-        self.X_eval.to_csv(f'{output_dir}/X_eval.csv', index=False)
-        self.y_eval.to_csv(f'{output_dir}/y_eval.csv', index=False)
-
-        # Save X_test and y_test
-        self.X_test.to_csv(f'{output_dir}/X_test.csv', index=False)
-        self.y_test.to_csv(f'{output_dir}/y_test.csv', index=False)
-
-        print(f"Datasets saved to {output_dir}/")
 
 
 
