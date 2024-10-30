@@ -64,12 +64,13 @@ else:
 """########################################################"""
 """ ################ Preprocess Dataset ##################"""
 """########################################################"""
+power_columns=['agg', 'wm', 'st', 'wh', 'ac_power', 'fridge_power']
 preprocessor = Preprocessor(merged_df)
 preprocessor.forward_fill()
 preprocessor.modify_clientid()
 preprocessor.modify_timestamps()
 #preprocessor.one_hot_encode_clients()
-preprocessor.normalize_with_mean_power()
+preprocessor.normalize_data(power_columns, method='standard')
 # Get the preprocessed dataframe
 preprocessed_df = preprocessor.get_dataframe()
 # Save preprocessed dataframe to csv
@@ -88,12 +89,15 @@ splitter.save_splits_to_csv(output_dir='output')
 """########################################################"""
 """ ############# Separate Dataset in Windows #############"""
 """########################################################"""
-window_size=10
-overlap=0.2
+window_size=60
+overlap=0.1
 # Initialize the dataset
 windowed_dataset = WindowedDataset(X_train, X_eval, X_test, y_train, y_eval, y_test, window_size=window_size, overlap=overlap)
 
+
 X_train_windowed, y_train_windowed, X_eval_windowed, y_eval_windowed, X_test_windowed, y_test_windowed = windowed_dataset.prepare_data_for_lstm()
+
+
 print(X_train.shape, y_train.shape)
 
 """
@@ -126,7 +130,7 @@ predictions_reconstructed=windowed_dataset.reconstruct_predictions(predictions)
 
 print('Model accuracy is:',r2_score(y_test,predictions_reconstructed))
 # Save predictions to CSV
-np.savetxt('output/predictions.csv', predictions, delimiter=',')
+np.savetxt('output/predictions.csv', predictions_reconstructed, delimiter=',')
 print("Predictions saved to 'predictions.csv'")
 
 

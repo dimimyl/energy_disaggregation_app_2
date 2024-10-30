@@ -1,9 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-import pandas as pd
-import matplotlib.pyplot as plt
-
 
 def plot_csv_columns(file_path):
     # Load the CSV file into a pandas DataFrame, specifying the correct delimiter

@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
 class Preprocessor:
@@ -73,17 +74,33 @@ class Preprocessor:
         self.dataframe[column_name] = self.dataframe[column_name].astype(
             int) // 10 ** 9  # Divide by 10^9 to convert nanoseconds to seconds
 
-    def normalize_data(self, columns=None, method='minmax'):
+    def log_transform(self, columns):
         """
-        Normalizes the specified columns of the dataframe to enhance ML performance.
+        Applies a log transformation to the specified columns in the dataframe.
 
         Parameters:
-        columns (list): The list of columns to normalize. If None, all numeric columns are normalized. Default is None.
-        method (str): The normalization method. Options are 'minmax' for Min-Max scaling or 'standard' for Z-score normalization. Default is 'minmax'.
+        columns (list): List of column names to apply the log transformation to.
         """
-        # If no specific columns are provided, normalize all numeric columns
-        if columns is None:
-            columns = self.dataframe.select_dtypes(include=['float64', 'int']).columns.tolist()
+        for col in columns:
+            if col in self.dataframe.columns:
+                self.dataframe[col] = np.log1p(self.dataframe[col])
+            else:
+                raise ValueError(f"Column {col} not found in dataframe.")
+
+    def normalize_data(self, columns, method='minmax'):
+        """
+        Normalizes specified power columns to enhance ML model performance, leaving timestamps unscaled.
+
+        Parameters:
+        columns (list): List of column names to normalize.
+        method (str): The normalization method: 'minmax' for Min-Max scaling or 'standard' for Z-score normalization.
+
+        Raises:
+        ValueError: If an invalid normalization method is provided.
+        """
+        # Verify columns list
+        if not columns:
+            raise ValueError("Please specify the columns to normalize.")
 
         # Initialize the scaler
         if method == 'minmax':
@@ -93,7 +110,7 @@ class Preprocessor:
         else:
             raise ValueError("Normalization method must be either 'minmax' or 'standard'.")
 
-        # Normalize the specified columns
+        # Apply scaling to the specified power columns only
         self.dataframe[columns] = scaler.fit_transform(self.dataframe[columns])
 
     def normalize_with_mean_power(self, power_column='agg'):
