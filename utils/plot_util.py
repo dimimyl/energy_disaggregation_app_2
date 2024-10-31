@@ -23,7 +23,7 @@ def plot_devices(dataframe):
         plt.figure(figsize=(12, 8))
 
         # Plot each signal (agg, wm, st, wh, ac_power, fridge_power)
-        for column in ['agg', 'wm', 'st', 'wh', 'ac_power', 'fridge_power']:
+        for column in ['agg', 'st', 'wh', 'wm', 'ac_power', 'fridge_power']:
             if column in client_data.columns:
                 plt.plot(client_data.index, client_data[column], label=column)
 
@@ -61,9 +61,9 @@ def plot_preprocessed_dataset(file_path):
 
         # Plotting each variable
         plt.plot(client_data['time'], client_data['agg'], label='Aggregate', alpha=0.7)
-        plt.plot(client_data['time'], client_data['wm'], label='Washing Machine', alpha=0.7)
-        plt.plot(client_data['time'], client_data['st'], label='Standby', alpha=0.7)
+        plt.plot(client_data['time'], client_data['st'], label='Stove', alpha=0.7)
         plt.plot(client_data['time'], client_data['wh'], label='Water Heater', alpha=0.7)
+        plt.plot(client_data['time'], client_data['wm'], label='Washing Machine', alpha=0.7)
         plt.plot(client_data['time'], client_data['ac_power'], label='AC Power', alpha=0.7)
         plt.plot(client_data['time'], client_data['fridge_power'], label='Fridge Power', alpha=0.7)
 

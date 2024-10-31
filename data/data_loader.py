@@ -28,8 +28,8 @@ class DataLoader:
             cursor = connection.cursor()
 
             # Define the date range
-            start_date = datetime(2024, 10, 19)
-            end_date = start_date + pd.DateOffset(days=4)
+            start_date = datetime(2024, 10, 24)
+            end_date = start_date + pd.DateOffset(days=7)
 
             for house in houses_config:
                 clientid_value = house['clientid']
@@ -40,8 +40,7 @@ class DataLoader:
                 # Define the columns to fetch
                 columns_to_fetch_aggregate = ['clientid', 'shellyid', 'time', 'total_aprt_power']
                 columns_to_fetch_device = ['clientid', 'shellyid', 'time', 'a_voltage', 'a_current', 'b_voltage',
-                                           'b_current',
-                                           'c_voltage', 'c_current']
+                                           'b_current', 'c_voltage', 'c_current']
                 columns_to_fetch_plug1 = ['clientid', 'shellyid', 'time', 'apower']
                 columns_to_fetch_plug2 = ['clientid', 'shellyid', 'time', 'apower']
 
@@ -98,7 +97,7 @@ class DataLoader:
                 df_plugs_fridge = pd.DataFrame(plug_rows_fridge, columns=columns_to_fetch_plug2)
 
                 # Merge the DataFrames
-                merged_df = self._merge_dataframes(df_aggregate, df_devices, df_plugs_ac, df_plugs_fridge)
+                merged_df = self._merge_dataframes(df_aggregate, df_devices, df_plugs_ac, df_plugs_fridge, clientid_value)
 
                 # Append the merged DataFrame for the current house to the list
                 merged_dfs.append(merged_df)
@@ -117,15 +116,16 @@ class DataLoader:
                 connection.close()
                 print("PostgreSQL connection is closed")
 
-    def _merge_dataframes(self, df_aggregate, df_devices, df_plugs_ac, df_plugs_fridge):
+    def _merge_dataframes(self, df_aggregate, df_devices, df_plugs_ac, df_plugs_fridge, clientid_value):
         """
-        Merges the fetched DataFrames into one.
+        Merges the fetched DataFrames into one, with value swapping for columns 'wm' and 'ac_power' if clientid is 'house18'.
 
         Parameters:
         - df_aggregate (pd.DataFrame): DataFrame containing aggregate power data.
         - df_devices (pd.DataFrame): DataFrame containing device measurements.
         - df_plugs_ac (pd.DataFrame): DataFrame containing AC plug measurements.
         - df_plugs_fridge (pd.DataFrame): DataFrame containing fridge plug measurements.
+        - clientid_value (str): Client ID for conditional value swapping.
 
         Returns:
         - merged_df (pd.DataFrame): The merged DataFrame containing all the data.
@@ -149,14 +149,19 @@ class DataLoader:
         # Renaming columns according to specified rules
         merged_df.rename(columns={
             'total_aprt_power': 'agg',
-            'a_apparent_power': 'wm',
-            'b_apparent_power': 'st',
-            'c_apparent_power': 'wh',
+            'a_apparent_power': 'st',
+            'b_apparent_power': 'wh',
+            'c_apparent_power': 'wm',
             'apower_x': 'ac_power',
             'apower_y': 'fridge_power'
         }, inplace=True)
 
+        # Check if clientid is 'house18' and swap values in 'wm' and 'ac_power' columns if needed
+        if clientid_value == 'house18':
+            merged_df[['wm', 'ac_power']] = merged_df[['ac_power', 'wm']].values
+
         return merged_df
+
 
 
 

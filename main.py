@@ -23,10 +23,10 @@ db_config = {
 }
 
 houses_config = [
-    {'clientid': 'house12', 'deviceid': 'st_wh_wm', 'plugid1': 'ac', 'plugid2': 'fridge'},
-    {'clientid': 'house14', 'deviceid': 'st_wh_wm', 'plugid1': 'ac', 'plugid2': 'fridge'},
     {'clientid': 'house15', 'deviceid': 'st_wh_wm', 'plugid1': 'ac', 'plugid2': 'fridge'},
     {'clientid': 'house16', 'deviceid': 'st_wh_wm', 'plugid1': 'ac1', 'plugid2': 'fridge'},
+    {'clientid': 'house18', 'deviceid': 'st_wh_ac', 'plugid1': 'wm', 'plugid2': 'fridge'},
+    {'clientid': 'house12', 'deviceid': 'st_wh_wm', 'plugid1': 'ac', 'plugid2': 'fridge'}
 ]
 
 # Load the data
@@ -59,7 +59,7 @@ else:
 """########################################################"""
 """ Plot Aggregated and Disaggregate signal for each client"""
 """########################################################"""
-#plot_devices(merged_df)
+plot_devices(merged_df)
 
 """########################################################"""
 """ ################ Preprocess Dataset ##################"""
