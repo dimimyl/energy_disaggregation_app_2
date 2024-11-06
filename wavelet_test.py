@@ -1,7 +1,7 @@
 import pandas as pd
 import pywt
 import numpy as np
-
+import matplotlib.pyplot as plt
 
 # Load signal from CSV file
 def load_signal(file_path):
@@ -15,7 +15,7 @@ def load_signal(file_path):
 
 
 # Apply Wavelet Packet Transform and flatten coefficients
-def wavelet_packet_transform(signal, wavelet='db1', maxlevel=None):
+def wavelet_packet_transform(signal, wavelet='db1', maxlevel=3):
     # Create Wavelet Packet decomposition
     wp = pywt.WaveletPacket(data=signal, wavelet=wavelet, mode='symmetric', maxlevel=maxlevel)
 
@@ -42,23 +42,26 @@ def reconstruct_signal(wp, flattened_coeffs):
 
 
 # Full process: Load, Transform, Flatten, Reconstruct
-def process_wavelet_packet(file_path, wavelet='db1', maxlevel=None):
+def process_wavelet_packet(file_path, wavelet='db1', maxlevel=3):
     # Step 1: Load signal
     signal = load_signal(file_path)
-
-    # Step 2: Apply Wavelet Packet Transform and flatten coefficients
+     # Step 2: Apply Wavelet Packet Transform and flatten coefficients
     wp, flattened_coeffs = wavelet_packet_transform(signal, wavelet=wavelet, maxlevel=maxlevel)
-
     # Step 3: Reconstruct the signal from flattened coefficients
     reconstructed_signal = reconstruct_signal(wp, flattened_coeffs)
 
-    return flattened_coeffs, reconstructed_signal
+    return signal, flattened_coeffs, reconstructed_signal
 
 
 # Example usage
 file_path = 'output/combined_dataset.csv'  # Replace with your file path
-flattened_coeffs, reconstructed_signal = process_wavelet_packet(file_path)
+signal, flattened_coeffs, reconstructed_signal = process_wavelet_packet(file_path)
 
-# Output results
-print("Flattened coefficients:\n", flattened_coeffs)
-print("Reconstructed signal:\n", reconstructed_signal)
+fig, axs = plt.subplots(2,1)
+axs[0].plot(signal)
+axs[1].plot(flattened_coeffs)
+axs[1].plot(reconstructed_signal)
+plt.show()
+
+
+
